@@ -3,10 +3,23 @@
 #--------------------------模块区域------------------------------------
 import csv
 import os
+
+import os.path
 #--------------------------函数定义区域--------------------------------
 #目录下文件列表函数 用于for循环
 def readfilename(path):#形成目录下的所有文件名.
     return os.listdir(path)
+def 方差计算(期望,数量):
+    global read_it
+    sum_离差=0.0
+    离差=0
+    离差平方和=0.0
+    for read_it in row:
+        离差=float(row[3])-float(期望)
+        离差平方和=离差*离差
+        sum_离差+=离差平方和
+    return sum_离差/数量
+
 #--------------------------初始筛选-------------------------------
 while True:
     first_does=input('请输入是否要筛选原始数据y/n:')
@@ -29,16 +42,51 @@ while True:
                         for i in range(0, 15):
                             list_now.append(row[i])
                         csv_write.writerow(list_now)
+        break
     else:
         continue
+#-----------------------删除退市的股票信息-----------------
+pathdir=readfilename('C:\\测试提取\\')
+for i in pathdir:
+    filesize = os.path.getsize('C:\\测试提取\\%s'%i)/1024/1024
+    if float(filesize)==0.0:
+        os.remove('C:\\测试提取\\%s'%i)
+        print('删除退市信息',i)
+
 #------------------------对筛选后的数据进行处理------------------
 #1.求出期望收益率
 #2.算出他们的方差(得到一年的期望收益率和方差)
 #3.计算协方差
+#4.计算β
+
+
+#1.求出期望收益
+
+dict_information={}#记录每个文件的期望,方差.
 pathdir=readfilename('C:\\测试提取\\')
-for i in pathdir:
+for i in pathdir:#读取每个特定的
+    sum_it=0.0
+    f=open('C:\\测试提取\\%s'%i,'r+')
+    read_it=csv.reader(f)
+    dict_information.setdefault('%s'%i,{})
+    dict_information['%s'%i].setdefault('期望',0.0)
+    dict_information['%s'%i].setdefault('方差',0.0)
+    dict_information['%s'%i].setdefault('数据数量',0)
+    dict_information['%s'%i].setdefault('加总',0)
+    for count,row in enumerate(read_it,1):
+        sum_it+=float(row[3])
+    dict_information['%s'%i]['期望']=sum_it/count
+    dict_information['%s'%i]['数据数量']=count
+    dict_information['%s'%i]['加总']=sum_it
+print(dict_information)
+
+#2求出方差
+for i in pathdir:#读取每个特定的
+    方差=0
     print('正在处理:',i)
     f=open('C:\\测试提取\\%s'%i,'r+')
     read_it=csv.reader(f)
     for row in read_it:
-        print(row)
+        方差=方差计算(float(dict_information[i]['期望']),int(dict_information[i]['数据数量']))
+        dict_information['%s' % i]['方差'] = 方差
+print(dict_information)

@@ -8,6 +8,15 @@ import urllib.request
 #     print(row)
 
 import os
+import csv
 
 pathdir=os.listdir('C:\\data\\')
 print(pathdir)
+
+f=open('C:\\data\\600000.csv','r+')
+read_it=csv.reader(f)
+row=[row for row in read_it]
+print(row[0])
+print(type(row[0]))
+row[0].append('离差')
+print(row)

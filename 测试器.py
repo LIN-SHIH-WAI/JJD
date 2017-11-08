@@ -27,3 +27,10 @@ a=set(a)
 a2=set(a2)
 print(list(a.intersection(a2)))
 print(list(a2.intersection(a)))
+
+for v,i in enumerate(a,1):
+    if v==1:
+        print(i)
+        break
+for i in a:
+    print(i)

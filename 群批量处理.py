@@ -27,7 +27,7 @@ while True:
             csv_write=csv.writer(z,dialect='excel')
             for row in reader:
                 list_now = []
-                if row[3] != '0.0':  # 去除没有价格的数据
+                if row[15] != '0.0':  # 去除没有价格的数据
                     if row[0][0:4] == '2016':  # 只提取2016年的数据
                         for i in range(0, 15):
                             list_now.append(row[i])
@@ -44,19 +44,48 @@ for i in pathdir:
         print('删除退市信息',i)
 
 #------------------------对筛选后的数据进行处理------------------
+#0.计算收益率
 #1.求出期望收益率
 #2.算出他们的方差(得到一年的期望收益率和方差)
 #3.计算协方差
 #4.计算β #指数用上证指数.
 
+#0.计算收益率
+pathdir=readfilename('C:\\测试提取\\')
+for i in  pathdir:
+    print('正在计算收益率:',i)
+    f=open('C:\\测试提取\\%s'%i,'r+')
+    q=open('C:\\测试提取2\\%s'%i,'w+',newline='')
+    read_it0=csv.reader(f)
+    pt_0=0.0
+    for kk,row0_0 in enumerate(read_it0,1):
+        if kk==1:
+            pt_0=float(row0_0[3])
+            break
+    f = open('C:\\测试提取\\%s' % i, 'r+')#如果重复使用f会导致两次for有记录
+    read_it0_0=csv.reader(f)
+    for row in read_it0_0:#每一天
+        list_now=[]
+        收益率=0
+        pt_1=float(row[3])
+        收益率=(pt_1-pt_0)/pt_0
+        for i in range(0, 15):
+            list_now.append(row[i])
+        list_now.append(收益率)
+        pt_0=float(row[3])
+        write_it=csv.writer(q,dialect='excel')
+        write_it.writerow(list_now)
+
+
+
 
 #1.求出期望收益
 
 dict_information={}#记录每个文件的期望,方差.
-pathdir=readfilename('C:\\测试提取\\')
+pathdir=readfilename('C:\\测试提取2\\')
 for i in pathdir:#读取每个特定的
     sum_it=0.0
-    f=open('C:\\测试提取\\%s'%i,'r+')
+    f=open('C:\\测试提取2\\%s'%i,'r+')
     read_it=csv.reader(f)
     dict_information.setdefault('%s'%i,{})
     dict_information['%s'%i].setdefault('期望',0.0)
@@ -65,7 +94,7 @@ for i in pathdir:#读取每个特定的
     dict_information['%s'%i].setdefault('加总',0)
     dict_information['%s'%i].setdefault('协方差',{})
     for count,row in enumerate(read_it,1):
-        sum_it+=float(row[3])
+        sum_it+=float(row[15])
     dict_information['%s'%i]['期望']=sum_it/count
     dict_information['%s'%i]['数据数量']=count
     dict_information['%s'%i]['加总']=sum_it
@@ -76,11 +105,11 @@ for i in pathdir:#读取每个特定的
     方差=0
     离差=0
     离差平方和=0
-    print('正在处理:',i)
-    f=open('C:\\测试提取\\%s'%i,'r+')
+    print('正在计算方差:',i)
+    f=open('C:\\测试提取2\\%s'%i,'r+')
     read_it=csv.reader(f)
     for row in read_it:
-        离差=float(row[3])-dict_information[i]['期望']
+        离差=float(row[15])-dict_information[i]['期望']
         离差平方=离差*离差
         离差平方和+=离差平方
         if dict_information[i]['数据数量']==1:
@@ -90,28 +119,28 @@ for i in pathdir:#读取每个特定的
         dict_information['%s' % i]['方差'] = 方差
 print(dict_information)
 #计算协方差
-pathdir=readfilename('C:\\测试提取\\')
+pathdir1=readfilename('C:\\测试提取2\\')
 zz=open('记录.txt','w+',encoding='utf-8')
-for i in pathdir:#读取每个文件 #第一个文件
-    f=open('C:\\测试提取\\%s'%i,'r+')
+pathdir2=readfilename('C:\\测试提取2\\')
+f=open('C:\\测试提取2\\%s'%i,'r+')
+for i in pathdir1:#读取每个文件 #第一个文件
+    f=open('C:\\测试提取2\\%s'%i,'r+')
     read_it=csv.reader(f)
     list1={}
     l1=[]#这两个列表用于筛选出同时存在日期的值
-
-
     list1.setdefault(i,{})
-    pathdir.remove(i)
+    pathdir2.remove(i)
     for row in read_it:
-        list1[i].setdefault(row[0],row[3])#第一个是日期 第二个是所对应的值(开盘价)
+        list1[i].setdefault(row[0],row[15])#第一个是日期 第二个是所对应的值(开盘价)
         l1.append(row[0])
-    for ii in pathdir:#第一个文件与其他文件的协方差计算
+    for ii in pathdir2:#第一个文件与其他文件的协方差计算
         l2 = []  # 这两个列表用于筛选出同时存在日期的值
         list1.setdefault(ii, {})
         交集 = []
-        f2 = open('C:\\测试提取\\%s' % ii, 'r+')
+        f2 = open('C:\\测试提取2\\%s' % ii, 'r+')
         read_it2 = csv.reader(f2)
         for row2 in read_it2:
-            list1[ii].setdefault(row2[0], row2[3])  # 第一个是日期 第二个是所对应的值(开盘价)
+            list1[ii].setdefault(row2[0], row2[15])  # 第一个是日期 第二个是所对应的值(开盘价)
             l2.append(row2[0])
         l1a=set(l1)
         l2a=set(l2)
@@ -129,7 +158,4 @@ for i in pathdir:#读取每个文件 #第一个文件
     print('cov(%s,%s)'%(i,ii),协方差)
 zz.write(str(dict_information))
 print(dict_information)
-
-
-
 

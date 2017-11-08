@@ -9,16 +9,6 @@ import os.path
 #目录下文件列表函数 用于for循环
 def readfilename(path):#形成目录下的所有文件名.
     return os.listdir(path)
-def 方差计算(期望,数量):
-    global read_it
-    sum_离差=0.0
-    离差=0
-    离差平方和=0.0
-    for read_it in row:
-        离差=float(row[3])-float(期望)
-        离差平方和=离差*离差
-        sum_离差+=离差平方和
-    return sum_离差/数量
 
 #--------------------------初始筛选-------------------------------
 while True:
@@ -57,7 +47,7 @@ for i in pathdir:
 #1.求出期望收益率
 #2.算出他们的方差(得到一年的期望收益率和方差)
 #3.计算协方差
-#4.计算β
+#4.计算β #指数用上证指数.
 
 
 #1.求出期望收益
@@ -73,6 +63,7 @@ for i in pathdir:#读取每个特定的
     dict_information['%s'%i].setdefault('方差',0.0)
     dict_information['%s'%i].setdefault('数据数量',0)
     dict_information['%s'%i].setdefault('加总',0)
+    dict_information['%s'%i].setdefault('协方差',{})
     for count,row in enumerate(read_it,1):
         sum_it+=float(row[3])
     dict_information['%s'%i]['期望']=sum_it/count
@@ -83,10 +74,19 @@ print(dict_information)
 #2求出方差
 for i in pathdir:#读取每个特定的
     方差=0
+    离差=0
+    离差平方和=0
     print('正在处理:',i)
     f=open('C:\\测试提取\\%s'%i,'r+')
     read_it=csv.reader(f)
     for row in read_it:
-        方差=方差计算(float(dict_information[i]['期望']),int(dict_information[i]['数据数量']))
+        离差=float(row[3])-dict_information[i]['期望']
+        离差平方=离差*离差
+        离差平方和+=离差平方
+        if dict_information[i]['数据数量']==1:
+            方差=离差平方和/(dict_information[i]['数据数量'])
+        else:
+            方差 = 离差平方和 / (dict_information[i]['数据数量']-1)#如果样本数>1 要-1
         dict_information['%s' % i]['方差'] = 方差
 print(dict_information)
+

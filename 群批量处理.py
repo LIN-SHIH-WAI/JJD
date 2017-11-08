@@ -126,6 +126,7 @@ for i in pathdir:#读取每个文件 #第一个文件
         dict_information[i]['协方差'].setdefault('cov(%s,%s)'%(i,ii),协方差)
         dict_information[ii]['协方差'].setdefault('cov(%s,%s)'%(ii,i),协方差)
     print('正在计算:%s  %s的协方差'%(i,ii))
+    print('cov(%s,%s)'%(i,ii),协方差)
 zz.write(str(dict_information))
 print(dict_information)
 

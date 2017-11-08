@@ -89,4 +89,46 @@ for i in pathdir:#读取每个特定的
             方差 = 离差平方和 / (dict_information[i]['数据数量']-1)#如果样本数>1 要-1
         dict_information['%s' % i]['方差'] = 方差
 print(dict_information)
+#计算协方差
+pathdir=readfilename('C:\\测试提取\\')
+zz=open('记录.txt','w+',encoding='utf-8')
+for i in pathdir:#读取每个文件 #第一个文件
+    f=open('C:\\测试提取\\%s'%i,'r+')
+    read_it=csv.reader(f)
+    list1={}
+    l1=[]#这两个列表用于筛选出同时存在日期的值
+
+
+    list1.setdefault(i,{})
+    pathdir.remove(i)
+    for row in read_it:
+        list1[i].setdefault(row[0],row[3])#第一个是日期 第二个是所对应的值(开盘价)
+        l1.append(row[0])
+    for ii in pathdir:#第一个文件与其他文件的协方差计算
+        l2 = []  # 这两个列表用于筛选出同时存在日期的值
+        list1.setdefault(ii, {})
+        交集 = []
+        f2 = open('C:\\测试提取\\%s' % ii, 'r+')
+        read_it2 = csv.reader(f2)
+        for row2 in read_it2:
+            list1[ii].setdefault(row2[0], row2[3])  # 第一个是日期 第二个是所对应的值(开盘价)
+            l2.append(row2[0])
+        l1a=set(l1)
+        l2a=set(l2)
+        交集=list(l1a.intersection(l2a))#得到二者相同的日期
+        二者离差积=0
+        二者离差积和=0
+        协方差=0
+        for count,iii in enumerate(交集,1):
+            二者离差积=(float(list1[i][iii])-float(dict_information[i]['期望']))*(float(list1[ii][iii])-float(dict_information[ii]['期望']))
+            二者离差积和+=二者离差积
+        协方差=二者离差积和/count
+        dict_information[i]['协方差'].setdefault('cov(%s,%s)'%(i,ii),协方差)
+        dict_information[ii]['协方差'].setdefault('cov(%s,%s)'%(ii,i),协方差)
+    print('正在计算:%s  %s的协方差'%(i,ii))
+zz.write(str(dict_information))
+print(dict_information)
+
+
+
 
